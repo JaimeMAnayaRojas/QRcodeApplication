@@ -20,7 +20,7 @@ const PLACEHOLDER_API_TOKEN = 'PASTE_YOUR_API_TOKEN_HERE';
 
 const CONFIG = {
   /** @type {string} Replace with your script deployment URL, e.g. https://script.google.com/macros/s/XXXX/exec */
-  WEB_APP_URL: 'https://script.google.com/macros/s/AstreaTicketing/exec',
+  WEB_APP_URL: 'https://script.google.com/macros/s/AKfycby_CB-S2L9F-JFKbxhvO3nYVAhh40cPRfo65-68F_Glr5jbAm1nkg2BBG_B5E7z1fws/exec',
   /**
    * Must exactly match Script property `API_TOKEN` in Apps Script (Project Settings).
    * Anyone can read this from the published site — it blocks casual abuse only.
