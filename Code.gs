@@ -19,8 +19,8 @@
  * - Your static site calls this script with GET + query string (no preflight).
  *
  * AUTH
- * - Every request must include query param token=... matching Script property
- *   API_TOKEN (see README for storing it via PropertiesService).
+ * - Every request must include query param token=... matching Script property API_TOKEN
+ *   (or FALLBACK_API_TOKEN in Code.gs if needed — see README).
  * =============================================================================
  */
 
@@ -29,6 +29,12 @@
  * Put your secret string as this property's *value* in Project Settings → Script properties.
  */
 var SCRIPT_PROP_API_TOKEN = 'API_TOKEN';
+
+/**
+ * If Script properties are missing/wrong in this project, set your secret here (same as frontend
+ * CONFIG.API_TOKEN). Prefer fixing Script property API_TOKEN — leave '' when that works.
+ */
+var FALLBACK_API_TOKEN = '';
 
 /** Replace with your Google Sheet ID (from the spreadsheet URL). */
 const SPREADSHEET_ID = '131C_zkCRTmIm34bVNUFoKFDNJofIHsQJbZpz2t_lujk';
@@ -75,20 +81,33 @@ function doPost(e) {
 }
 
 /**
- * Ensures the caller supplied the shared API token stored in Script properties.
+ * Resolved secret: Script property API_TOKEN wins; otherwise FALLBACK_API_TOKEN (trimmed).
+ */
+function getConfiguredApiToken_() {
+  var fromProps = PropertiesService.getScriptProperties().getProperty(SCRIPT_PROP_API_TOKEN);
+  var s = fromProps ? String(fromProps).trim() : '';
+  if (s !== '') return s;
+  var fb = typeof FALLBACK_API_TOKEN !== 'undefined' && FALLBACK_API_TOKEN ? String(FALLBACK_API_TOKEN).trim() : '';
+  return fb || '';
+}
+
+/**
+ * Ensures the caller supplied the shared API token (Script properties or fallback).
  * @returns {Object|null} Error payload for JSON response, or null if authorized.
  */
 function requireApiToken_(params) {
-  var configured = PropertiesService.getScriptProperties().getProperty(SCRIPT_PROP_API_TOKEN);
-  if (!configured || String(configured).trim() === '') {
-    Logger.log('requireApiToken_: missing Script property ' + SCRIPT_PROP_API_TOKEN);
+  var configured = getConfiguredApiToken_();
+  if (!configured) {
+    Logger.log('requireApiToken_: empty API_TOKEN property and empty FALLBACK_API_TOKEN');
     return {
       ok: false,
-      error: 'Server misconfiguration: set API_TOKEN in Script properties (Project Settings).',
+      error:
+        'Server misconfiguration: set Script property API_TOKEN (Project Settings), ' +
+        'or set FALLBACK_API_TOKEN in Code.gs to match your frontend token.',
     };
   }
   var provided = trimSafe_(params.token);
-  if (provided !== String(configured)) {
+  if (provided !== configured) {
     return { ok: false, error: 'Unauthorized.' };
   }
   return null;
@@ -291,11 +310,26 @@ function escapeHtml_(s) {
 }
 
 /**
- * Run from editor → View → Logs. Confirms whether Script property API_TOKEN exists (never logs the secret).
+ * Run from editor → View → Logs. Lists Script property *names* only (find typos like Api_Token).
+ */
+function debug_listScriptPropertyKeys() {
+  var all = PropertiesService.getScriptProperties().getProperties();
+  var keys = Object.keys(all);
+  Logger.log('Script property keys (' + keys.length + '): ' + (keys.length ? keys.join(', ') : '(none)'));
+}
+
+/**
+ * Run from editor → View → Logs. Never prints the secret; shows lengths only.
  */
 function debug_checkApiTokenProperty() {
   var v = PropertiesService.getScriptProperties().getProperty(SCRIPT_PROP_API_TOKEN);
-  Logger.log(v ? 'API_TOKEN is SET (length ' + String(v).length + ')' : 'API_TOKEN is MISSING');
+  var fb =
+    typeof FALLBACK_API_TOKEN !== 'undefined' && FALLBACK_API_TOKEN
+      ? String(FALLBACK_API_TOKEN).trim()
+      : '';
+  Logger.log(v ? 'API_TOKEN property SET (length ' + String(v).trim().length + ')' : 'API_TOKEN property MISSING');
+  Logger.log(fb ? 'FALLBACK_API_TOKEN SET (length ' + fb.length + ')' : 'FALLBACK_API_TOKEN empty');
+  Logger.log('Effective token length for Web App: ' + String(getConfiguredApiToken_()).length);
 }
 
 /**

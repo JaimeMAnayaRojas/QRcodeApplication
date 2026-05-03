@@ -68,9 +68,25 @@ The Web App reads your secret from **Apps Script → Project Settings (gear) →
 6. **Save script properties**, then **Save** the project (toolbar).
 7. **Deploy → Manage deployments → Edit → New version → Deploy** so the live Web App picks up nothing stale (property is immediate, but redeploy is safe).
 
-Verify: run **`debug_checkApiTokenProperty`** in the editor (**Run**), then **Executions** / **Logs** — you should see `API_TOKEN is SET`.
+Verify: run **`debug_checkApiTokenProperty`** — **Executions** (clock icon) → latest → **Logs**. Non‑zero **Effective token length** means the Web App can authorize requests.
 
-Alternatively run **`oneTime_setApiTokenProperty`** once (after pasting the secret in `TOKEN` inside `Code.gs`), then **remove** the secret from code and save.
+Alternatively run **`oneTime_setApiTokenProperty`** once (paste secret into `TOKEN` in `Code.gs`), run it, then **clear `TOKEN`** and save.
+
+Run **`debug_listScriptPropertyKeys`** if you suspect a typo — you must see property name **`API_TOKEN`** exactly.
+
+#### Still broken? `FALLBACK_API_TOKEN`
+
+At the top of **`Code.gs`**:
+
+```javascript
+var FALLBACK_API_TOKEN = 'same-secret-as-script.js-CONFIG.API_TOKEN';
+```
+
+Save → **Deploy → New version → Deploy.** This bypasses Script properties for the secret.
+
+#### Wrong project?
+
+The Web App deployment must belong to **this** script project (open **Deploy → Manage deployments** from the same editor window where you edit `Code.gs`). Script properties from another project do nothing here.
 
 ---
 
@@ -79,8 +95,8 @@ Alternatively run **`oneTime_setApiTokenProperty`** once (after pasting the secr
 1. Open `script.js` and set:
 
    ```js
-   WEB_APP_URL: 'https://script.google.com/macros/s/AstreaTicketing/exec',
-   API_TOKEN: 'same-secret-as-script-property-below',
+   WEB_APP_URL: 'https://script.google.com/macros/s/XXXX/exec',
+   API_TOKEN: 'same-secret-as-FALLBACK-or-Script-property',
    ```
 
 2. Push `index.html`, `style.css`, and `script.js` to a GitHub repository.
