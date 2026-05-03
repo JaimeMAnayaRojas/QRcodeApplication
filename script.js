@@ -108,7 +108,18 @@ async function apiGet(action, params) {
 
   const merged = { token: apiToken, ...params };
   const url = buildApiUrl(action, merged);
-  const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+
+  let res;
+  try {
+    res = await fetch(url, { method: 'GET', cache: 'no-store', redirect: 'follow' });
+  } catch (err) {
+    throw new Error(
+      'Failed to fetch the Apps Script Web App. Usually this means the deployment is not open to ' +
+        'anonymous users: in Apps Script use Deploy → Manage deployments → Edit → ' +
+        '"Who has access" → Anyone. Then redeploy a new version.'
+    );
+  }
+
   const text = await res.text();
   let data;
   try {

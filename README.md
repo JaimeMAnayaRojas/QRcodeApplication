@@ -48,6 +48,14 @@ Do not rename columns unless you update `HEADER_ROW` and `COL` in `Code.gs` toge
 
 After you change code later: **Deploy → Manage deployments → Edit (pencil) → Version → New version → Deploy** so the live URL picks up changes.
 
+### “Failed to fetch” from GitHub Pages
+
+If the browser shows **Failed to fetch**, your Web App is almost certainly **not** deployed as **Anyone**. Google then redirects anonymous requests to the Google **sign-in** page; `fetch` cannot complete (CORS / auth), so it fails.
+
+Fix: **Deploy → Manage deployments →** pencil **→ Who has access → Anyone →** deploy **New version**. Changing this requires a new deployment version to take effect.
+
+Quick check (no login): open your `/exec` URL in a **private/incognito** window. You should see JSON (for example `Unauthorized.` or `Unknown action`), **not** a Google login screen.
+
 ---
 
 ## c) Connect the frontend to the API URL
