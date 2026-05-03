@@ -11,6 +11,13 @@
  * OPTIONS the way generic APIs do, which breaks fetch() from GitHub Pages.
  */
 
+/**
+ * Default strings meaning “not configured yet”.
+ * Validation uses strict equality (===) against these only — do not paste real secrets here.
+ */
+const PLACEHOLDER_WEB_APP_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
+const PLACEHOLDER_API_TOKEN = 'PASTE_YOUR_API_TOKEN_HERE';
+
 const CONFIG = {
   /** @type {string} Replace with your script deployment URL, e.g. https://script.google.com/macros/s/XXXX/exec */
   WEB_APP_URL: 'https://script.google.com/macros/s/AstreaTicketing/exec',
@@ -89,13 +96,17 @@ function buildApiUrl(action, params) {
  * Call the web app and parse JSON (Apps Script returns JSON mime type).
  */
 async function apiGet(action, params) {
-  if (!CONFIG.WEB_APP_URL || CONFIG.WEB_APP_URL.includes('PASTE_YOUR_WEB_APP')) {
+  const webUrl = String(CONFIG.WEB_APP_URL || '').trim();
+  const apiToken = String(CONFIG.API_TOKEN || '').trim();
+
+  if (!webUrl || webUrl === PLACEHOLDER_WEB_APP_URL) {
     throw new Error('Set CONFIG.WEB_APP_URL in script.js to your Apps Script /exec URL.');
   }
-  if (!CONFIG.API_TOKEN || CONFIG.API_TOKEN.includes('o=it,a]ki!x7A37d!k>v<iSeZ_$-(X?ik0')) {
+  if (!apiToken || apiToken === PLACEHOLDER_API_TOKEN) {
     throw new Error('Set CONFIG.API_TOKEN in script.js to match Apps Script Script property API_TOKEN.');
   }
-  const merged = { token: CONFIG.API_TOKEN, ...params };
+
+  const merged = { token: apiToken, ...params };
   const url = buildApiUrl(action, merged);
   const res = await fetch(url, { method: 'GET', cache: 'no-store' });
   const text = await res.text();
