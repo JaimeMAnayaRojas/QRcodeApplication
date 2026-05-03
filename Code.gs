@@ -291,6 +291,29 @@ function escapeHtml_(s) {
 }
 
 /**
+ * Run from editor → View → Logs. Confirms whether Script property API_TOKEN exists (never logs the secret).
+ */
+function debug_checkApiTokenProperty() {
+  var v = PropertiesService.getScriptProperties().getProperty(SCRIPT_PROP_API_TOKEN);
+  Logger.log(v ? 'API_TOKEN is SET (length ' + String(v).length + ')' : 'API_TOKEN is MISSING');
+}
+
+/**
+ * OPTIONAL bootstrap if you prefer not to use the Settings UI:
+ * 1. Put your secret inside TOKEN quotes below (temporarily).
+ * 2. Select this function → Run → authorize if prompted.
+ * 3. Erase the secret from TOKEN (leave '' ), Save, redeploy Web App.
+ */
+function oneTime_setApiTokenProperty() {
+  var TOKEN = '';
+  if (!TOKEN || TOKEN.length < 8) {
+    throw new Error('Set TOKEN in oneTime_setApiTokenProperty, run once, then clear TOKEN.');
+  }
+  PropertiesService.getScriptProperties().setProperty(SCRIPT_PROP_API_TOKEN, TOKEN);
+  Logger.log('API_TOKEN saved to Script properties. Clear TOKEN from source now.');
+}
+
+/**
  * Manual test helper (run from editor): creates one fake ticket to yourself.
  */
 function debug_registerSelf() {

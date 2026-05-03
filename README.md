@@ -56,6 +56,22 @@ Fix: **Deploy → Manage deployments →** pencil **→ Who has access → Anyon
 
 Quick check (no login): open your `/exec` URL in a **private/incognito** window. You should see JSON (for example `Unauthorized.` or `Unknown action`), **not** a Google login screen.
 
+### “Server misconfiguration: set API_TOKEN in Script properties”
+
+The Web App reads your secret from **Apps Script → Project Settings (gear) → Script properties**, not from the Google Sheet.
+
+1. Open the **same** Apps Script project that contains this `Code.gs`.
+2. Click **Project Settings** (gear icon, left sidebar).
+3. Scroll to **Script Properties** → **Add script property** (or Edit if it exists).
+4. **Property** must be exactly: `API_TOKEN` (capital letters, underscore).
+5. **Value**: paste the **same** string as `CONFIG.API_TOKEN` in your `script.js`.
+6. **Save script properties**, then **Save** the project (toolbar).
+7. **Deploy → Manage deployments → Edit → New version → Deploy** so the live Web App picks up nothing stale (property is immediate, but redeploy is safe).
+
+Verify: run **`debug_checkApiTokenProperty`** in the editor (**Run**), then **Executions** / **Logs** — you should see `API_TOKEN is SET`.
+
+Alternatively run **`oneTime_setApiTokenProperty`** once (after pasting the secret in `TOKEN` inside `Code.gs`), then **remove** the secret from code and save.
+
 ---
 
 ## c) Connect the frontend to the API URL
